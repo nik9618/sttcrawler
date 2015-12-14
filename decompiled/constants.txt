@@ -1,0 +1,22 @@
+public static const NO_TYPE:InstrumentType = new InstrumentType("No Type", -1);
+public static const EQUITY:InstrumentType = new InstrumentType("Equity", 0);
+public static const FUTURES:InstrumentType = new InstrumentType("Futures", 1);
+public static const OPTIONS:InstrumentType = new InstrumentType("Options", 2);
+public static const INDEX:InstrumentType = new InstrumentType("Index", 3);
+
+
+public static const NO_TYPE:InstrumentSubType = new InstrumentSubType("No Type", -1);
+public static const DEFAULT:InstrumentSubType = new InstrumentSubType("Default", 0);
+public static const NORMAL:InstrumentSubType = new InstrumentSubType("Normal", 1);
+public static const WARRANT:InstrumentSubType = new InstrumentSubType("Warrant", 2);
+public static const DERIVATIVES_WARRANT:InstrumentSubType = new InstrumentSubType("Derivatives Warrant", 3);
+public static const ETF:InstrumentSubType = new InstrumentSubType("ETF", 4);
+
+
+public static const NO_TYPE:PriceType = new PriceType("No Type", -1, "");
+public static const LIMIT:PriceType = new PriceType("Limit", 0, "");
+public static const MP:PriceType = new PriceType("MP", 1, "MP");
+public static const ATO:PriceType = new PriceType("ATO", 2, "ATO");
+public static const ATC:PriceType = new PriceType("ATC", 3, "ATC");
+public static const MP_MKT:PriceType = new PriceType("MP-MKT", 4, "MP-MKT");
+public static const MP_MTL:PriceType = new PriceType("MP-MTL", 5, "MP-MTL");
