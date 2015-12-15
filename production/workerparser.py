@@ -104,8 +104,8 @@ def tickerParser(s):
 			pos, size = readByte(msg,pos);
 			size=int(size)
 			pos, instrument = readString(msg,pos,size)
-			pos, price = readIOS(conf,msg,pos,unsigned=False)
-			pos, change = readIOS(conf,msg,pos,unsigned=False)
+			pos, price = readIOS(conf,msg,pos,priceDigit,unsigned=False)
+			pos, change = readIOS(conf,msg,pos,priceDigit,unsigned=False)
 			pos, seqID = readInt(msg,pos)
 			
 			pos, volCount = readSOB(conf,msg,pos)
