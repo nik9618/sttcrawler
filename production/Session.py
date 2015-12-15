@@ -65,7 +65,7 @@ class Session():
 		m = hashlib.md5()
 		m.update(key)
 		hs = m.hexdigest()
-		print "hash("+key +") = " + hs
+		# print "hash("+key +") = " + hs
 		params = "boardType=equity&"
 		params += "APIVersion="+config.APIVersion+"&"
 		params += "subListName=&"
@@ -134,7 +134,7 @@ class Session():
 		m = hashlib.md5()
 		m.update(key)
 		hs = m.hexdigest()
-		print "hash("+key +") = " + hs
+		# print "hash("+key +") = " + hs
 		
 		params = "time="+str(int(time.time()+self.difftime))+"&"
 		params += "clientType="+self.flashVar['fvRealtimeClientType']+"&"

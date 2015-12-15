@@ -31,7 +31,7 @@ for j in tmpInstList:
 
 
 # #-- truncated for speeding up developement
-# instList =instList[0:150];
+# instList =instList[1100:1200];
 # #-- end truncation
 
 # s = Session(users[lgIdx]['user'],users[lgIdx]['pwd'])
@@ -75,7 +75,6 @@ while True:
 		if(j>=n_thread): break
 		to_work.append((j,users[lgIdx],j*config.max_streaming_concurrent,(j+1)*config.max_streaming_concurrent))
 		lgIdx+=1;
-
 	i=i+config.n_concurrent;
 	if(len(to_work)==0):
 		break;
@@ -86,7 +85,7 @@ while True:
 		threads.append(t)
 		t.start()
 
-	time.sleep(10);
+	time.sleep(5);
 	# for w in to_work:
 	# 	threads[w[0]].join()
 

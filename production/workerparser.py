@@ -175,14 +175,19 @@ def bidofferParser(s):
 			print hasProjected
 
 			if(hasInitMarket == 1):
-			    (pos,previousClose) = readIOS(conf,msg,pos,priceDigit);
-			    (pos,high) = readIOS(conf,msg,pos,priceDigit);
-			    (pos,low) = readIOS(conf,msg,pos,priceDigit);
-			    (pos,ceiling) = readIOS(conf,msg,pos,priceDigit);
-			    (pos,floor) = readIOS(conf,msg,pos,priceDigit);
-			    if (instrumentType==1 or instrumentType==2): #--- is derivatives
-			        spread = readIOS(conf,msg,pos,priceDigit);
-			        previousSettle = readIOS(conf,msg,pos,priceDigit);
+				(pos,previousClose) = readIOS(conf,msg,pos,priceDigit);
+				(pos,high) = readIOS(conf,msg,pos,priceDigit);
+				(pos,low) = readIOS(conf,msg,pos,priceDigit);
+				(pos,ceiling) = readIOS(conf,msg,pos,priceDigit);
+				print "PCLOSE: " + str(previousClose)
+				print "PCLOSE: " + str(high)
+				print "PCLOSE: " + str(low)
+				print "PCLOSE: " + str(ceiling)
+				(pos,floor) = readIOS(conf,msg,pos,priceDigit);
+				if (instrumentType==1 or instrumentType==2): #--- is derivatives
+					pos,spread = readIOS(conf,msg,pos,priceDigit);
+					pos,previousSettle = readIOS(conf,msg,pos,priceDigit);
+				print "PSETTLE : " + str(previousSettle)
 
 			if(hasInitIntraday == 1):
 			    if (instrumentType ==0 or instrumentType ==1 or instrumentType ==2):
