@@ -14,10 +14,10 @@ def marketSumParser(s):
 		pos,service = readByte(msg,pos)
 		
 		if(service == 5):
-			print "Service : " + str(service)
+			# print "Service : " + str(service)
 			pos,conf = readByte(msg,pos)
 			conf = parseConf(conf)
-			print conf
+			# print conf
 			pos,flag = readByte(msg,pos)
 
 			total = {}
@@ -39,14 +39,15 @@ def marketSumParser(s):
 			pos, size = readByte(msg,pos)
 			pos, total['setStatus'] = readString(msg,pos,size)
 
-			print total
+			# print total
 		else:
-			print "FROM SERVICE 5 :::: WRONG SERVICE > " + str(service)
+			# print "FROM SERVICE 5 :::: WRONG SERVICE > " + str(service)
+			pass;
 	return 
 
 
 def tickerParser(s):
-	
+
 	while(True):
 		size = s.recv(2)
 		size = unpack('>H',size)[0]
@@ -55,7 +56,6 @@ def tickerParser(s):
 		pos = 0
 		pos, service = readByte(msg,pos)
 		if(service == 4):
-
 			pos, conf = readByte(msg,pos)
 			conf = parseConf(conf)
 			pos, intinstrumentType = readByte(msg,pos)
@@ -118,13 +118,15 @@ def tickerParser(s):
 			# print "orderSide= " + orderSide
 			# print "trend= " + trend
 			# print "isSum= " + str(isSum)
-			print str(seqID)+"\t"+str(instrument)+"\t"+str(price)+"\t" + str(change) + "\t"+str(volCount)+"\t"+ str(volumns)
-			sys.stdout.flush();
+			# print str(seqID)+"\t"+str(instrument)+"\t"+str(price)+"\t" + str(change) + "\t"+str(volCount)+"\t"+ str(volumns)
+			# sys.stdout.flush();
 		else:
-			print "SERVICE TICKER ::::: WRONG SERVICE > " + str(service)
+			# print "SERVICE TICKER ::::: WRONG SERVICE > " + str(service)
+			pass;
 	return
 
-def bidofferParser(s):
+def bidofferParser(s,index,credentials,fr,to):
+	
 	while(True):
 		size = s.recv(2)
 		size = unpack('>H',size)[0]
@@ -145,8 +147,16 @@ def bidofferParser(s):
 			(pos,size) = readByte(msg,pos);
 			(pos,instrument) = readString(msg,pos,size);
 			(pos,instrumentType) = readByte(msg,pos);
-			print instrument
+			print(instrument),
+			sys.stdout.flush();
+			
+			# index,credentials,fr,to
+			if(config.validateSocket[index] == 0):
+				config.validateSocket[index] = 1
 
+			if(config.validateInstrument[instrument] == 0):
+				config.validateInstrument[instrument] = 1	
+			
 			instSubtype = -1
 			if(instrumentType==0): # 0 = equity
 			    (pos,instSubType) = readByte(msg,pos,unsigned=False);
@@ -167,33 +177,33 @@ def bidofferParser(s):
 			hasBidOffer = (flag >> 1) & 1;
 			hasProjected = (flag >> 0) & 1;
 
-			print hasInitMarket
-			print hasInitIntraday
-			print hasInitStat
-			print hasSummary
-			print hasBidOffer
-			print hasProjected
+			# print hasInitMarket
+			# print hasInitIntraday
+			# print hasInitStat
+			# print hasSummary
+			# print hasBidOffer
+			# print hasProjected
 
 			if(hasInitMarket == 1):
 				(pos,previousClose) = readIOS(conf,msg,pos,priceDigit);
 				(pos,high) = readIOS(conf,msg,pos,priceDigit);
 				(pos,low) = readIOS(conf,msg,pos,priceDigit);
 				(pos,ceiling) = readIOS(conf,msg,pos,priceDigit);
-				print "PCLOSE: " + str(previousClose)
-				print "PCLOSE: " + str(high)
-				print "PCLOSE: " + str(low)
-				print "PCLOSE: " + str(ceiling)
+				# print "PCLOSE: " + str(previousClose)
+				# print "PCLOSE: " + str(high)
+				# print "PCLOSE: " + str(low)
+				# print "PCLOSE: " + str(ceiling)
 				(pos,floor) = readIOS(conf,msg,pos,priceDigit);
 				if (instrumentType==1 or instrumentType==2): #--- is derivatives
 					pos,spread = readIOS(conf,msg,pos,priceDigit);
 					pos,previousSettle = readIOS(conf,msg,pos,priceDigit);
-				print "PSETTLE : " + str(previousSettle)
+				# print "PSETTLE : " + str(previousSettle)
 
 			if(hasInitIntraday == 1):
 			    if (instrumentType ==0 or instrumentType ==1 or instrumentType ==2):
 			        (pos,size) = readSOB(conf,msg,pos);
 			        (pos,longInstName) = readString(msg,pos,size);
-			        print longInstName
+			        # print longInstName
 
 			        if(instrumentType==0): # equity
 			            pos,pe = readIOS(conf,msg,pos,config.PE_DIGIT);
@@ -323,17 +333,17 @@ def bidofferParser(s):
 			        pos,askVolume4 = readLOI(conf,msg,pos);
 			        pos,askVolume5 = readLOI(conf,msg,pos);
 
-			        print "\t"+str(bidFlag) + "\t" + str(askFlag)
-			        print str(bidVolume1) +"\t"+str(bidPrice1)  + "\t" + str(askPrice1)  + "\t" + str(askVolume1) 
-			        print str(bidVolume2) +"\t"+str(bidPrice2)  + "\t" + str(askPrice2)  + "\t" + str(askVolume2) 
-			        print str(bidVolume3) +"\t"+str(bidPrice3)  + "\t" + str(askPrice3)  + "\t" + str(askVolume3) 
-			        print str(bidVolume4) +"\t"+str(bidPrice4)  + "\t" + str(askPrice4)  + "\t" + str(askVolume4) 
-			        print str(bidVolume5) +"\t"+str(bidPrice5)  + "\t" + str(askPrice5)  + "\t" + str(askVolume5) 
-
-			print lastDone
-			print change
-			print percentChange
-			print totalVolume
+			        # print "\t"+str(bidFlag) + "\t" + str(askFlag)
+			        # print str(bidVolume1) +"\t"+str(bidPrice1)  + "\t" + str(askPrice1)  + "\t" + str(askVolume1) 
+			        # print str(bidVolume2) +"\t"+str(bidPrice2)  + "\t" + str(askPrice2)  + "\t" + str(askVolume2) 
+			        # print str(bidVolume3) +"\t"+str(bidPrice3)  + "\t" + str(askPrice3)  + "\t" + str(askVolume3) 
+			        # print str(bidVolume4) +"\t"+str(bidPrice4)  + "\t" + str(askPrice4)  + "\t" + str(askVolume4) 
+			        # print str(bidVolume5) +"\t"+str(bidPrice5)  + "\t" + str(askPrice5)  + "\t" + str(askVolume5) 
+			# print lastDone
+			# print change
+			# print percentChange
+			# print totalVolume
 		else:
-			print "SERVICE BIDOFFER ::::: WRONG SERVICE > " + str(service)
+			print "("+str(index)+")SERVICE BIDOFFER ::::: WRONG SERVICE > " + str(service)
+			pass;
 	return

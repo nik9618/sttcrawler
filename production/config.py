@@ -4,7 +4,7 @@ seleniumpath = 	'/Users/nik9618/Desktop/Library/chromedriver'
 url='https://click2win.settrade.com'
 # hourshift = 15
 APIVersion = '1'
-n_concurrent = 10
+n_concurrent = 1
 max_streaming_concurrent = 8
 
 

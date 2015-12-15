@@ -7,6 +7,7 @@ import numpy as np
 from workerparser import *
 import threading
 
+
 #-- load user list
 users=[];
 with open(config.path+'settings/userlist.txt', 'r') as f:
@@ -31,7 +32,7 @@ for j in tmpInstList:
 
 
 # #-- truncated for speeding up developement
-# instList =instList[1100:1200];
+# instList =instList[0:150];
 # #-- end truncation
 
 # s = Session(users[lgIdx]['user'],users[lgIdx]['pwd'])
@@ -57,11 +58,22 @@ for j in tmpInstList:
 #-- CrowdLogin
 s = Session(users[lgIdx]['user'],users[lgIdx]['pwd'])
 totalSocket = [];
+config.validateSocket= dict();
+config.validateInstrument= dict();
+for i in instList:
+	config.validateInstrument[i] = 0;
+
 def worker(index,credentials,fr,to):
-	s = Session(credentials['user'], credentials['pwd'])
-	s.login()
-	socketBidOffer = s.bidofferSocket(instList[fr:to]);
-	bidofferParser(socketBidOffer);
+	try:
+		config.validateSocket[index] = 0;
+		s = Session(credentials['user'], credentials['pwd'])
+		s.login()
+		socketBidOffer = s.bidofferSocket(instList[fr:to])
+		bidofferParser(socketBidOffer,index,credentials,fr,to)
+	except:
+		print "ERROR" + str(index) +" -- "+str(credentials)+" -- "+str(instList[fr:to])
+		time.sleep(1)
+		worker(index,credentials,fr,to)
 	return;
 
 threads = []
@@ -84,11 +96,17 @@ while True:
 		t = threading.Thread(target=worker,args=w)
 		threads.append(t)
 		t.start()
+	time.sleep(1);
 
-	time.sleep(5);
-	# for w in to_work:
-	# 	threads[w[0]].join()
 
-# # just temporary wait ....
-# mktsumThread.join()
-# tickerThread.join()
+# ---- validate connections
+time.sleep(10);
+while(True):
+	print config.validateInstrument
+	print config.validateSocket
+	time.sleep(10)
+# email perhaps
+
+
+
+

@@ -150,6 +150,7 @@ class Session():
 	def genSocket(self):
 		key = self.genKey()
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		print key;
 		dns = socket.gethostbyname_ex(key[2])
 		host = dns[2][0]
 		port = int(key[3])
@@ -157,19 +158,19 @@ class Session():
 		s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 		ss = self.flashVar['fvUserref']+"|"+self.flashVar['fvBrokerId']+"|"+key[1]+"|" + str(int(time.time()+self.difftime)) + "|"+self.flashVar['fvRealtimeClientType']+"|"+config.APIVersion+"\n"
 		s.send(ss)
-		print ss
+		# print ss
 		return s
 
 	def marketSummarySocket(self):
 		s = self.genSocket()
 		s.send("REG|5\n")
-		print "REG|5\n"
+		# print "REG|5\n"
 		return s
 
 	def tickerSocket(self):
 		s = self.genSocket()
 		s.send("REG|4^N~N^N~N^E~D^E~D\n")
-		print "REG|4^N~N^N~N^E~D^E~D\n"
+		# print "REG|4^N~N^N~N^E~D^E~D\n"
 		return s
 
 	def bidofferSocket(self,insts):
@@ -190,7 +191,7 @@ class Session():
 		ss += "\n"
 		s.send(ss);
 		print ss
-		print self.key
+		# print self.key
 		return s
 
 if __name__ == '__main__':
