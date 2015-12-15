@@ -1,7 +1,6 @@
 import config
-import selenium
-import selenium.webdriver.support.ui as UI
-from selenium import webdriver;
+import re
+from robobrowser import RoboBrowser
 import time
 import urllib
 import datetime
@@ -19,28 +18,20 @@ class Session():
 	def __init__(self,username='',password=''):
 		self.username = username
 		self.password = password
-		self.driver = webdriver.Chrome(config.seleniumpath)
-		self.driver.get(config.url)
-		time.sleep(1)
-	
-	def suicide(self):
-		self.driver.quit();
-
+		self.browser = RoboBrowser()
+		
 	def login(self):
-		userBox = self.driver.find_element_by_name('txtLogin')
-		passBox = self.driver.find_element_by_name('txtPassword')
-		userBox.clear()
-		passBox.clear()
-		userBox.send_keys(self.username)
-		passBox.send_keys(self.password)
-		elem = self.driver.find_element_by_class_name('input_login_submit-login');
-		elem.click()
-		time.sleep(1)
+		self.browser.open('https://click2win.settrade.com/LoginRepOnRole.jsp?txtLogin='+self.username+'&txtPassword='+self.password+'&txtSecureKey=NONE&txtDefaultPage=%2FSETClick2WIN%2FSelectUserLeague.jsp&txtLoginPage=SETClick2WIN/index.jsp&txtBrokerId=089&txtSystem=ITP&txtRole=INTERNET&tmpUsername=&tmpPassword=')
+		form = self.browser.get_forms()[0]
+		self.browser.submit_form(form)
+		form = self.browser.get_forms()[0]
+		form = self.browser.get_forms()[0]
+		self.browser.submit_form(form)
 		self.getStreamingVar()
 		
 	def syncTime(self):
-		self.driver.get(config.url + self.flashVar['fvSyncTimeURL'])
-		servTime = self.driver.find_element_by_tag_name('body').text.split("\r")[0].split("|")
+		self.browser.open(config.url + self.flashVar['fvSyncTimeURL'])
+		servTime = self.browser.select('p')[0].get_text().split("|")
 		servTime = int(servTime[1]) #+ config.hourshift*60*60*1000
 		servTime = servTime/1000
 		self.difftime = time.time() - servTime
@@ -48,18 +39,22 @@ class Session():
 
 	def getStreamingVar(self):
 		# ------ Generate flash variables
-		self.driver.get('view-source:'+config.url+'/realtime/streaming5/flash/StreamingPage.jsp')
-		time.sleep(1)
-		src = self.driver.page_source
-		src = src[src.find('flashVar'):]
-		src = src[src.find('{')+1:]
-		src = src[0:src.find('}')]
+		self.browser.open(config.url+'/realtime/streaming5/flash/StreamingPage.jsp')		
+		src = self.browser.select('html')[0]
+		src = src.get_text().encode('utf-8').split("\n")
+		for i in src:
+			if(i.find('flashVar')== -1 ): continue;
+			i = i[i.find('flashVar'):]
+			i = i[i.find('{')+1:]
+			i = i[0:i.find('}')]
+			src = i;
+			break;	
 		flashVar = {}
 		src = src.split(",")
 		for line in src:
 			line = line.split(":")
 			flashVar[urllib.unquote(line[0])] = urllib.unquote(line[1][1:-1])
-		time.sleep(1);
+		
 		self.flashVar = flashVar
 		self.syncTime()
 		return flashVar
@@ -70,25 +65,16 @@ class Session():
 		m = hashlib.md5()
 		m.update(key)
 		hs = m.hexdigest()
-		# print "---- hash("+key +") = " + hs
-		script = ""
-		script = script + 'sc=\'\'; sc += \'<form id="dynForm" action="'+url+'" method="post">\';'
-		script = script + 'sc += \'<input type="hidden" name="boardType" value="'+"equity"+'">\';'
-		script = script + 'sc += \'<input type="hidden" name="APIVersion" value="'+config.APIVersion+'">\';'
-		script = script + 'sc += \'<input type="hidden" name="subListName" value="">\';'
-		script = script + 'sc += \'<input type="hidden" name="mainListName" value=".A">\';'
-		script = script + 'sc += \'<input type="hidden" name="boardSubType" value="">\';'
-		script = script + 'sc += \'<input type="hidden" name="service" value="12">\';'
-		script = script + 'sc += \'<input type="hidden" name="q" value="'+hs+'">\';'
-		script = script + 'sc += \'</form>\';'
-		script = script + 'document.body.innerHTML += sc;'
-		# print script;
-
-		script = script + 'document.getElementById("dynForm").submit()';
-		# driver.get('https://click2win.settrade.com'+flashVar['fvGenerateKeyURL'])
-		self.driver.execute_script(script)
-		# print "----"+ url
-		text = self.driver.find_element_by_tag_name('body').text.split("\r")[0].split("|")
+		print "hash("+key +") = " + hs
+		params = "boardType=equity&"
+		params += "APIVersion="+config.APIVersion+"&"
+		params += "subListName=&"
+		params += "mainListName=.A&"
+		params += "boardSubType=&"
+		params += "service=12&"
+		params += "q="+hs
+		self.browser.open(url +"?"+params);
+		text = self.browser.select('p')[0].get_text().split("|")
 
 		if text[0] == 'T':
 		    category = text[6].split("^")
@@ -149,18 +135,15 @@ class Session():
 		m.update(key)
 		hs = m.hexdigest()
 		print "hash("+key +") = " + hs
-		script = ""
-		script = script + 'sc=\'\'; sc += \'<form id="dynForm" action="'+url+'" method="post">\';'
-		script = script + 'sc += \'<input type="hidden" name="time" value="'+str(int(time.time()+self.difftime))+'">\';'
-		script = script + 'sc += \'<input type="hidden" name="clientType" value="'+self.flashVar['fvRealtimeClientType']+'">\';'
-		script = script + 'sc += \'<input type="hidden" name="txtSETNET3" value="'+self.flashVar['fvSETNET3']+'">\';'
-		script = script + 'sc += \'<input type="hidden" name="APIVersion" value="'+config.APIVersion+'">\';'
-		script = script + 'sc += \'<input type="hidden" name="q" value="'+hs+'">\';'
-		script = script + 'sc += \'</form>\';'
-		script = script + 'document.body.innerHTML += sc;'
-		script = script + 'document.getElementById("dynForm").submit()';
-		self.driver.execute_script(script)
-		src = self.driver.find_element_by_tag_name('body').text.split("\r")[0].split("|")
+		
+		params = "time="+str(int(time.time()+self.difftime))+"&"
+		params += "clientType="+self.flashVar['fvRealtimeClientType']+"&"
+		params += "txtSETNET3="+self.flashVar['fvSETNET3']+"&"
+		params += "APIVersion="+config.APIVersion+"&"
+		params += "q="+hs
+
+		self.browser.open(url +"?"+params);
+		src = self.browser.select('p')[0].get_text().split("|")
 		self.key=src;
 		return src
 
@@ -212,9 +195,9 @@ class Session():
 
 if __name__ == '__main__':
 	s=Session('usr0001','usr0001')
-	s.login();
-	s.getStreamingVar();
-	s.getInstrumentList();
+	# s.login();
+	# s.genKey();
+	# print s.getInstrumentList();
 	# s.marketSummarySocket();
 	# s.tickerSocket()
 	# s.bidofferSocket(['AAV','AOT','VGI'])
