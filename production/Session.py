@@ -123,9 +123,9 @@ class Session():
 		    # print len(equity)
 		    # total = len(futures)+ len(options) + len(equity)
 		    # print total
-		    equity = equity[1:100]
-		    futures = futures[1:100]
-		    options = []
+		    # equity = equity[1:100]
+		    # futures = futures[1:100]
+		    # options = []
 		    return (equity,futures,options)
 		else:
 			return None;
