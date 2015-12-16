@@ -35,19 +35,20 @@ for j in tmpInstList:
 # instList =instList[0:150];
 # #-- end truncation
 
-# s = Session(users[lgIdx]['user'],users[lgIdx]['pwd'])
-# lgIdx+=1
-# s.login()
-# socketMktSum = s.marketSummarySocket();
-# mktsumThread = threading.Thread(target=marketSumParser,args=(socketMktSum,))
-# mktsumThread.start()
+# index,credentials,fr,to
+s = Session(users[lgIdx]['user'],users[lgIdx]['pwd'])
+s.login()
+socketMktSum = s.marketSummarySocket();
+mktsumThread = threading.Thread(target=marketSumParser,args=(socketMktSum,))
+mktsumThread.start()
+lgIdx+=1
 
-# s = Session(users[lgIdx]['user'],users[lgIdx]['pwd'])
-# lgIdx+=1
-# s.login()
-# socketTicker = s.tickerSocket();
-# tickerThread = threading.Thread(target=tickerParser,args=(socketTicker,))
-# tickerThread.start()
+s = Session(users[lgIdx]['user'],users[lgIdx]['pwd'])
+s.login()
+socketTicker = s.tickerSocket();
+tickerThread = threading.Thread(target=tickerParser,args=(socketTicker,))
+tickerThread.start()
+lgIdx+=1
 
 # ---bypass for speeding up development
 # np.save('tmpInstList.txt', instList)
@@ -96,17 +97,15 @@ while True:
 		t = threading.Thread(target=worker,args=w)
 		threads.append(t)
 		t.start()
-	time.sleep(1);
-
+	time.sleep(3);
 
 # ---- validate connections
-time.sleep(10);
+time.sleep(30);
 while(True):
 	print config.validateInstrument
 	print config.validateSocket
 	time.sleep(10)
 # email perhaps
-
 
 
 

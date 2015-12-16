@@ -123,7 +123,9 @@ class Session():
 		    # print len(equity)
 		    # total = len(futures)+ len(options) + len(equity)
 		    # print total
-
+		    equity = equity[1:100]
+		    futures = futures[1:100]
+		    options = []
 		    return (equity,futures,options)
 		else:
 			return None;
@@ -155,7 +157,7 @@ class Session():
 		host = dns[2][0]
 		port = int(key[3])
 		conn = s.connect((host, port))
-		s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+		# s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 		ss = self.flashVar['fvUserref']+"|"+self.flashVar['fvBrokerId']+"|"+key[1]+"|" + str(int(time.time()+self.difftime)) + "|"+self.flashVar['fvRealtimeClientType']+"|"+config.APIVersion+"\n"
 		s.send(ss)
 		# print ss

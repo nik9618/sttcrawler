@@ -3,8 +3,13 @@ import config
 import sys
 from struct import *
 from reading import *
+import time
 
 def marketSumParser(s):
+	f = open(config.output+"marketSum", 'w')
+	f.write(time.strftime('%Y/%m/%d'))
+	f.write("\n")
+	f.flush()
 	while(True):
 		size = s.recv(2)
 		size = unpack('>H',size)[0]
@@ -38,7 +43,10 @@ def marketSumParser(s):
 
 			pos, size = readByte(msg,pos)
 			pos, total['setStatus'] = readString(msg,pos,size)
-
+			
+			f.write(str(total))
+			f.write("\n")
+			f.flush()
 			# print total
 		else:
 			# print "FROM SERVICE 5 :::: WRONG SERVICE > " + str(service)
@@ -47,7 +55,10 @@ def marketSumParser(s):
 
 
 def tickerParser(s):
-
+	f = open(config.output+"marketTick", 'w')
+	f.write(time.strftime('%Y/%m/%d'))
+	f.write("\n")
+	f.flush()
 	while(True):
 		size = s.recv(2)
 		size = unpack('>H',size)[0]
@@ -76,13 +87,13 @@ def tickerParser(s):
 			elif(tickerSubType == 7): tickerSubType='UnitTrust'
 
 			if(orderSide == 0):
-			    orderSide='Buy'
+			    orderSide='B'
 			elif(orderSide == 1):
-			    orderSide='Sell'
+			    orderSide='S'
 			elif(orderSide == 2):
-			    orderSide='Short'
+			    orderSide='S'
 			elif(orderSide == 3):
-			    orderSide='Cover'
+			    orderSide='C'
 
 			if(trend == 0):
 			    trend='Up'
@@ -94,31 +105,42 @@ def tickerParser(s):
 			    trend='NoData'
 
 			if(intinstrumentType==0): # equity
-			    priceDigit = 2;
-			    pos=4
+				priceDigit = 2
 			else:
-			    priceDigit = unpack('>B',msg[4])[0];
-			    pos=5
+			    pos,priceDigit = readByte(msg,pos)
 			    
 			total = {}
-			pos, size = readByte(msg,pos);
+			pos, size = readSOB(conf,msg,pos);
 			size=int(size)
 			pos, instrument = readString(msg,pos,size)
+			# f.write(instrument+"\t");
+			# f.flush()
 			pos, price = readIOS(conf,msg,pos,priceDigit,unsigned=False)
+			# f.write(str(price)+"\t");
+			# f.flush()
 			pos, change = readIOS(conf,msg,pos,priceDigit,unsigned=False)
+			# f.write(str(change)+"\t");
+			# f.flush()
 			pos, seqID = readInt(msg,pos)
+			# f.write(str(seqID)+"\t");
+			# f.flush()
 			
 			pos, volCount = readSOB(conf,msg,pos)
+			# f.write(str(volCount)+"\t");
+			# f.flush()
 			volumns=[]
 			for i in range(volCount):
-			    pos, volumn = readIOSV(conf,msg,pos)
-			    volumns.append(volumn);
-
+				pos, volumn = readIOSV(conf,msg,pos)
+				volumns.append(volumn);
+			# f.write(str(volumns)+"\t");
+			# f.flush()
 			# print "tickerType= " + tickerSubType
 			# print "orderSide= " + orderSide
 			# print "trend= " + trend
 			# print "isSum= " + str(isSum)
-			# print str(seqID)+"\t"+str(instrument)+"\t"+str(price)+"\t" + str(change) + "\t"+str(volCount)+"\t"+ str(volumns)
+			f.write(str(seqID)+"\t"+str(instrument)+"\t"+str(price)+"\t" + str(change) +"\t"+orderSide+ "\t"+str(volCount)+str(volumns))
+			f.write("\n")
+			f.flush()
 			# sys.stdout.flush();
 		else:
 			# print "SERVICE TICKER ::::: WRONG SERVICE > " + str(service)
@@ -147,8 +169,6 @@ def bidofferParser(s,index,credentials,fr,to):
 			(pos,size) = readByte(msg,pos);
 			(pos,instrument) = readString(msg,pos,size);
 			(pos,instrumentType) = readByte(msg,pos);
-			print(instrument),
-			sys.stdout.flush();
 			
 			# index,credentials,fr,to
 			if(config.validateSocket[index] == 0):
@@ -183,7 +203,7 @@ def bidofferParser(s,index,credentials,fr,to):
 			# print hasSummary
 			# print hasBidOffer
 			# print hasProjected
-
+			# print "----"
 			if(hasInitMarket == 1):
 				(pos,previousClose) = readIOS(conf,msg,pos,priceDigit);
 				(pos,high) = readIOS(conf,msg,pos,priceDigit);
@@ -332,18 +352,18 @@ def bidofferParser(s,index,credentials,fr,to):
 			        pos,askVolume3 = readLOI(conf,msg,pos);
 			        pos,askVolume4 = readLOI(conf,msg,pos);
 			        pos,askVolume5 = readLOI(conf,msg,pos);
-
-			        # print "\t"+str(bidFlag) + "\t" + str(askFlag)
-			        # print str(bidVolume1) +"\t"+str(bidPrice1)  + "\t" + str(askPrice1)  + "\t" + str(askVolume1) 
-			        # print str(bidVolume2) +"\t"+str(bidPrice2)  + "\t" + str(askPrice2)  + "\t" + str(askVolume2) 
-			        # print str(bidVolume3) +"\t"+str(bidPrice3)  + "\t" + str(askPrice3)  + "\t" + str(askVolume3) 
-			        # print str(bidVolume4) +"\t"+str(bidPrice4)  + "\t" + str(askPrice4)  + "\t" + str(askVolume4) 
-			        # print str(bidVolume5) +"\t"+str(bidPrice5)  + "\t" + str(askPrice5)  + "\t" + str(askVolume5) 
-			# print lastDone
-			# print change
-			# print percentChange
-			# print totalVolume
+			print instrument
+			print "\t"+str(bidFlag) + "\t" + str(askFlag)
+			print str(bidVolume1) +"\t"+str(bidPrice1)  + "\t" + str(askPrice1)  + "\t" + str(askVolume1) 
+			print str(bidVolume2) +"\t"+str(bidPrice2)  + "\t" + str(askPrice2)  + "\t" + str(askVolume2) 
+			print str(bidVolume3) +"\t"+str(bidPrice3)  + "\t" + str(askPrice3)  + "\t" + str(askVolume3) 
+			print str(bidVolume4) +"\t"+str(bidPrice4)  + "\t" + str(askPrice4)  + "\t" + str(askVolume4) 
+			print str(bidVolume5) +"\t"+str(bidPrice5)  + "\t" + str(askPrice5)  + "\t" + str(askVolume5) 
+			print lastDone
+			print change
+			print percentChange
+			print totalVolume
 		else:
-			print "("+str(index)+")SERVICE BIDOFFER ::::: WRONG SERVICE > " + str(service)
+			# print "("+str(index)+")SERVICE BIDOFFER ::::: WRONG SERVICE > " + str(service)
 			pass;
 	return
