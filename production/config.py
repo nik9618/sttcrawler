@@ -3,10 +3,15 @@ path = '/Users/nik9618/Desktop/sttcrawler/production/'
 seleniumpath = 	'/Users/nik9618/Desktop/Library/chromedriver'
 url='https://click2win.settrade.com'
 output='/Users/nik9618/Desktop/sttcrawler/production/output/'
+instoutput='/Users/nik9618/Desktop/sttcrawler/production/output/inst/'
 # hourshift = 15
 APIVersion = '1'
 n_concurrent = 1
 max_streaming_concurrent = 8
+host='localhost',
+user='root',
+password='',
+db='sttcrawler',
 
 # streaming constant
 DEFAULT_PRICE_DIGIT = 2;

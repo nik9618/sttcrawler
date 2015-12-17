@@ -70,7 +70,7 @@ def worker(index,credentials,fr,to):
 		s = Session(credentials['user'], credentials['pwd'])
 		s.login()
 		socketBidOffer = s.bidofferSocket(instList[fr:to])
-		bidofferParser(socketBidOffer,index,credentials,fr,to)
+		bidofferParser(socketBidOffer,index,credentials,fr,to,instList)
 	except:
 		print "ERROR" + str(index) +" -- "+str(credentials)+" -- "+str(instList[fr:to])
 		time.sleep(1)

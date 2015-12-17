@@ -4,6 +4,12 @@ import sys
 from struct import *
 from reading import *
 import time
+from datetime import datetime
+import json
+import os 
+
+def getCurrentTime():
+	return str(datetime.utcnow().strftime('%H:%M:%S.%f')[:-3])
 
 def marketSumParser(s):
 	f = open(config.output+"marketSum", 'w')
@@ -43,21 +49,22 @@ def marketSumParser(s):
 
 			pos, size = readByte(msg,pos)
 			pos, total['setStatus'] = readString(msg,pos,size)
-			
-			f.write(str(total))
+			total['time'] = getCurrentTime();
+
+			f.write( json.dumps(total))
 			f.write("\n")
 			f.flush()
-			# print total
 		else:
 			# print "FROM SERVICE 5 :::: WRONG SERVICE > " + str(service)
 			pass;
 	return 
-
-
+	
 def tickerParser(s):
-	f = open(config.output+"marketTick", 'w')
+	f = open(config.output+"marketTick", 'a')
+	f.write("#")
 	f.write(time.strftime('%Y/%m/%d'))
 	f.write("\n")
+	f.write("#time\tintinstrumentType\tsignature\torderSide\ttrend\tinstrument\tprice\tchange\tseqID\tvolCount\tvolumes\n")
 	f.flush()
 	while(True):
 		size = s.recv(2)
@@ -96,13 +103,13 @@ def tickerParser(s):
 			    orderSide='C'
 
 			if(trend == 0):
-			    trend='Up'
+			    trend='U'
 			elif(trend == 1):
 			    trend='-'
 			elif(trend == 2):
-			    trend='Down'
+			    trend='D'
 			elif(trend == 3):
-			    trend='NoData'
+			    trend='N'
 
 			if(intinstrumentType==0): # equity
 				priceDigit = 2
@@ -134,12 +141,13 @@ def tickerParser(s):
 				volumns.append(volumn);
 			# f.write(str(volumns)+"\t");
 			# f.flush()
-			# print "tickerType= " + tickerSubType
-			# print "orderSide= " + orderSide
-			# print "trend= " + trend
-			# print "isSum= " + str(isSum)
-			f.write(str(seqID)+"\t"+str(instrument)+"\t"+str(price)+"\t" + str(change) +"\t"+orderSide+ "\t"+str(volCount)+str(volumns))
-			f.write("\n")
+			
+			fstr = "%s\t%d\t%d\t%s\t%s\t%s\t%.2f\t%.2f\t%d\t%d" % (getCurrentTime(),intinstrumentType,signature,orderSide,trend,instrument,price,change ,seqID,volCount)
+			for v in volumns:
+				fstr += "\t" + str(v)
+			fstr+="\n"
+
+			f.write(fstr)
 			f.flush()
 			# sys.stdout.flush();
 		else:
@@ -147,7 +155,11 @@ def tickerParser(s):
 			pass;
 	return
 
-def bidofferParser(s,index,credentials,fr,to):
+def bidofferParser(s,index,credentials,fr,to,insts):
+	
+	f = dict()
+	if( not os.path.isdir(config.instoutput) ):
+		os.makedirs(config.instoutput)
 	
 	while(True):
 		size = s.recv(2)
@@ -209,10 +221,6 @@ def bidofferParser(s,index,credentials,fr,to):
 				(pos,high) = readIOS(conf,msg,pos,priceDigit);
 				(pos,low) = readIOS(conf,msg,pos,priceDigit);
 				(pos,ceiling) = readIOS(conf,msg,pos,priceDigit);
-				# print "PCLOSE: " + str(previousClose)
-				# print "PCLOSE: " + str(high)
-				# print "PCLOSE: " + str(low)
-				# print "PCLOSE: " + str(ceiling)
 				(pos,floor) = readIOS(conf,msg,pos,priceDigit);
 				if (instrumentType==1 or instrumentType==2): #--- is derivatives
 					pos,spread = readIOS(conf,msg,pos,priceDigit);
@@ -291,8 +299,8 @@ def bidofferParser(s,index,credentials,fr,to):
 
 			if(hasSummary==1):
 			    pos,lastDone = readIOS(conf,msg,pos,priceDigit);
-			    pos,change = readIOS(conf,msg,pos,priceDigit);
-			    pos,percentChange = readIOS(conf,msg,pos,config.PERCENT_DIGIT);
+			    pos,change = readIOS(conf,msg,pos,priceDigit,unsigned=False);
+			    pos,percentChange = readIOS(conf,msg,pos,config.PERCENT_DIGIT,unsigned=False);
 			    pos,totalVolume = readLOI(conf,msg,pos);
 			    if (instrumentType ==0 or instrumentType ==1 or instrumentType ==2):
 			        pos,average = readIOS(conf,msg,pos,priceDigit);
@@ -352,17 +360,54 @@ def bidofferParser(s,index,credentials,fr,to):
 			        pos,askVolume3 = readLOI(conf,msg,pos);
 			        pos,askVolume4 = readLOI(conf,msg,pos);
 			        pos,askVolume5 = readLOI(conf,msg,pos);
-			print instrument
-			print "\t"+str(bidFlag) + "\t" + str(askFlag)
-			print str(bidVolume1) +"\t"+str(bidPrice1)  + "\t" + str(askPrice1)  + "\t" + str(askVolume1) 
-			print str(bidVolume2) +"\t"+str(bidPrice2)  + "\t" + str(askPrice2)  + "\t" + str(askVolume2) 
-			print str(bidVolume3) +"\t"+str(bidPrice3)  + "\t" + str(askPrice3)  + "\t" + str(askVolume3) 
-			print str(bidVolume4) +"\t"+str(bidPrice4)  + "\t" + str(askPrice4)  + "\t" + str(askVolume4) 
-			print str(bidVolume5) +"\t"+str(bidPrice5)  + "\t" + str(askPrice5)  + "\t" + str(askVolume5) 
-			print lastDone
-			print change
-			print percentChange
-			print totalVolume
+			
+
+			if(instrument not in f):
+				f[instrument] = open(config.instoutput+instrument, 'a')
+				f[instrument].write("#")
+				f[instrument].write(time.strftime('%Y/%m/%d'))
+				f[instrument].write("\n")
+				f[instrument].write("#time\tpclose\tlast\tchg\tpchg\ttotalVol\tbidFlag\taskFlag\tbidv1\tbidv2\tbidv3\tbidv4\tbidv5\tbidp1\tbidp2\tbidp3\tbidp4\tbidp5\taskv1\taskv2\taskv3\taskv4\taskv5\taskp1\taskp2\taskp3\taskp4\taskp5\n")
+				f[instrument].flush()
+			
+			fstr = ""
+			fstr += "%s\t" % (getCurrentTime())
+			fstr += "%.2f\t" % (previousClose)
+			fstr += "%.2f\t" % (lastDone)
+			fstr += "%.2f\t" % (change)
+			fstr += "%.2f\t" % (percentChange)
+			fstr += "%d\t" % (totalVolume)
+			fstr += "%d\t" % (bidFlag)
+			fstr += "%d\t" % (askFlag)
+
+			fstr += "%d\t" % (bidVolume1)
+			fstr += "%d\t" % (bidVolume2)
+			fstr += "%d\t" % (bidVolume3)
+			fstr += "%d\t" % (bidVolume4)
+			fstr += "%d\t" % (bidVolume5)
+
+			fstr += "%.2f\t" % (bidPrice1)
+			fstr += "%.2f\t" % (bidPrice2)
+			fstr += "%.2f\t" % (bidPrice3)
+			fstr += "%.2f\t" % (bidPrice4)
+			fstr += "%.2f\t" % (bidPrice5)
+			
+			fstr += "%d\t" % (askVolume1)
+			fstr += "%d\t" % (askVolume2)
+			fstr += "%d\t" % (askVolume3)
+			fstr += "%d\t" % (askVolume4)
+			fstr += "%d\t" % (askVolume5)
+
+			fstr += "%.2f\t" % (askPrice1)
+			fstr += "%.2f\t" % (askPrice2)
+			fstr += "%.2f\t" % (askPrice3)
+			fstr += "%.2f\t" % (askPrice4)
+			fstr += "%.2f\t" % (askPrice5)
+			
+			fstr += "\n"
+			f[instrument].write(fstr)
+			f[instrument].flush()
+			print "BID OFFER : "+instrument;
 		else:
 			# print "("+str(index)+")SERVICE BIDOFFER ::::: WRONG SERVICE > " + str(service)
 			pass;
