@@ -25,7 +25,6 @@ class Session():
 		form = self.browser.get_forms()[0]
 		self.browser.submit_form(form)
 		form = self.browser.get_forms()[0]
-		form = self.browser.get_forms()[0]
 		self.browser.submit_form(form)
 		self.getStreamingVar()
 		
@@ -48,8 +47,9 @@ class Session():
 			i = i[i.find('{')+1:]
 			i = i[0:i.find('}')]
 			src = i;
-			break;	
+			break;
 		flashVar = {}
+		print src
 		src = src.split(",")
 		for line in src:
 			line = line.split(":")
@@ -104,6 +104,7 @@ class Session():
 		                
 		    new_equity =[]
 		    
+		    reNW = re.compile('^.*-W$')
 		    reW = re.compile('^.*-W\d(\d*)$')
 		    reDW = re.compile('^(.|..|...|....)\d\d(C|P)\d\d\d\d.$')
 		    reF = re.compile('^.*-F$')
@@ -111,7 +112,7 @@ class Session():
 		    reQ = re.compile('^.*-Q$')
 		      
 		    for eq in equity:
-		        if(reW.match(eq) or reDW.match(eq) or reF.match(eq) or reP.match(eq) or reQ.match(eq)):
+		        if(reNW.match(eq) or reW.match(eq) or reDW.match(eq) or reF.match(eq) or reP.match(eq) or reQ.match(eq)):
 		            #not simple
 		            pass;
 		        else:
@@ -198,7 +199,7 @@ class Session():
 
 if __name__ == '__main__':
 	s=Session('usr0001','usr0001')
-	# s.login();
+	s.login();
 	# s.genKey();
 	# print s.getInstrumentList();
 	# s.marketSummarySocket();

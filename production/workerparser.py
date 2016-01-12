@@ -141,7 +141,6 @@ def tickerParser(s):
 				volumns.append(volumn);
 			# f.write(str(volumns)+"\t");
 			# f.flush()
-			
 			fstr = "%s\t%d\t%d\t%s\t%s\t%s\t%.2f\t%.2f\t%d\t%d" % (getCurrentTime(),intinstrumentType,signature,orderSide,trend,instrument,price,change ,seqID,volCount)
 			for v in volumns:
 				fstr += "\t" + str(v)
